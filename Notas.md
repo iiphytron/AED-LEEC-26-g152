@@ -1,6 +1,8 @@
 -Os ficheiros .h são slop mas não deve fazer muita diferença porque só servem
 para trazer as funções dos outros ficheiros para o respetivo ficheiro
 
+-Makefile não sei se funciona de momento.
+
 -O ExitFile é apenas um "molde" para o que se deve escrever.
 Quando conseguires juntar os trabalhos, basta pôr o nome de umas variáveis e deve ficar ok.
 
