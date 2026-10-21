@@ -11,15 +11,13 @@ typedef struct {
     int y;  // Coordenada Y (1 a Y_max)
 } Posicao;
 
-/**
- * Lê e valida rigorosamente o ficheiro .position.
- *
- * Parâmetros:
- *   f_pos: Ponteiro do ficheiro .position já aberto para leitura
- *   C: Número total de cidades lido previamente do ficheiro .map
- *   Ponteiro para o vetor de Posicao (índices 1 a C) em caso de sucesso.
- *   Retorna NULL se existir qualquer erro de validação (ex.: coordenadas fora
- *   dos limites, cidades em falta ou duplicadas), permitindo sair sem output.
+/*
+  Parâmetros:
+    f_pos: Ponteiro do ficheiro .position já aberto para leitura
+    C: Número total de cidades lido previamente do ficheiro .map
+    Ponteiro para o vetor de Posicao (índices 1 a C) em caso de sucesso.
+    Retorna NULL se existir qualquer erro de validação (ex.: coordenadas fora
+    dos limites, cidades em falta ou duplicadas), permitindo sair sem output.
  */
 Posicao *ler_e_validar_posicoes(FILE *f_pos, int C) {
     if (f_pos == NULL || C <= 0) {
@@ -28,9 +26,9 @@ Posicao *ler_e_validar_posicoes(FILE *f_pos, int C) {
 
     int X_max = 0, Y_max = 0;
 
-    // 1. Ler o cabeçalho (dimensões máximas permitidas para o plano)
+    // dimensões máximas
     if (fscanf(f_pos, "%d %d", &X_max, &Y_max) != 2 || X_max <= 0 || Y_max <= 0) {
-        return NULL; // Dimensões do plano inválidas
+        return NULL; 
     }
 
     // Alocação dinâmica do vetor de posições (índices 1 a C)
