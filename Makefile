@@ -1,33 +1,93 @@
-# Makefile de exemplo para o projeto Manhattan
-# Ajusta a lista SOURCES aos ficheiros .c que realmente existem no projeto.
+# Makefile do projeto HealkrISTin
+# make c                 -> compilar
+# make t                 -> executar BabyOnes e comparar com .ProfSol
+# make v                 -> repetir os testes sob Valgrind
+# make clean             -> remover ficheiros gerados
+# make t STOP_ON_FAIL=0   -> continuar depois de um teste falhado
 
 CC       = gcc
-CFLAGS   = -std=c11 -Wall -Wextra -Wpedantic -g
-LDLIBS   = -lm
-TARGET   = projeto
+CFLAGS   ?= -std=c11 -Wall -Wextra -Wpedantic -Werror -g -O0
+LDLIBS   ?= -lm
+TARGET   := healkristin
+TEST_DIR ?= BabyOnes
+STOP_ON_FAIL ?= 1
 
-SOURCES  = OpenFile.c Tasks.c Map.c Task3Task4Oficial.c ExitFile.c
-OBJECTS  = $(SOURCES:.c=.o)
 
-# Nomes por omissão dos ficheiros de entrada para o alvo "run".
-QUESTS   ?= exemplo.quests
-MAP      ?= exemplo.map
-POSITION ?= exemplo.position
+SOURCES := healkristin.c Tasks.c Map.c task3_4.c task1_2 position.c
+OBJECTS := $(SOURCES:.c=.o)
 
-.PHONY: all clean run rebuild
+.PHONY: all c t v clean test FORCE _run_tests
 
-all: $(TARGET)
+all: c
+
+c: $(TARGET)
 
 $(TARGET): $(OBJECTS)
-	$(CC) $(CFLAGS) $(OBJECTS) -o $@ $(LDLIBS)
+	$(CC) $(CFLAGS) -o $(foreach obj,$^,"$(obj)") -o "$@" $(LDLIBS)
 
 %.o: %.c
-	$(CC) $(CFLAGS) -c $< -o $@
+	$(CC) $(CFLAGS) -c "$<" -o "$@"
 
-run: $(TARGET)
-	./$(TARGET) "$(QUESTS)" "$(MAP)" "$(POSITION)"
+test: t
 
-rebuild: clean all
+t: c
+	@$(MAKE) --no-print-directory _run_tests TEST_MODE=normal
+
+v: c
+	@command -v valgrind >/dev/null 2>&1 || { echo "Erro: Valgrind não está instalado ou não está no PATH."; exit 127; }
+	@$(MAKE) --no-print-directory _run_tests TEST_MODE=valgrind
+
+_run_tests:
+	@set -u; \
+	if [ ! -d "$(TEST_DIR)" ]; then \
+		echo "Erro: não encontrei a pasta de testes '$(TEST_DIR)'."; \
+		echo "Extrai BabyOnes (com t01.quests, t01.map, t01.position e t01.ProfSol) para essa pasta."; \
+		echo "Também podes usar: make t TEST_DIR=/caminho/para/BabyOnes"; \
+		exit 2; \
+	fi; \
+	set -- "$(TEST_DIR)"/t*.quests; \
+	if [ ! -f "$$1" ]; then echo "Erro: não encontrei t*.quests em $(TEST_DIR)."; exit 2; fi; \
+	total=0; failed=0; \
+	for q in "$(TEST_DIR)"/t*.quests; do \
+		[ -f "$$q" ] || continue; \
+		total=$$((total + 1)); \
+		base=$${q%.quests}; name=$$(basename "$$base"); \
+		if [ ! -f "$$base.map" ] || [ ! -f "$$base.position" ] || [ ! -f "$$base.ProfSol" ]; then \
+			echo "[FAIL] $$name: falta .map, .position ou .ProfSol."; \
+			failed=$$((failed + 1)); \
+		else \
+			tmp=$$(mktemp -d); \
+			cp "$$q" "$$tmp/.quests" && cp "$$base.map" "$$tmp/.map" && cp "$$base.position" "$$tmp/.position" || { echo "[FAIL] $$name: não foi possível preparar o teste."; rm -rf "$$tmp"; exit 1; }; \
+			echo "==> $$name ($(TEST_MODE))"; \
+			rc=0; \
+			if [ "$(TEST_MODE)" = "valgrind" ]; then \
+				(cd "$$tmp" && valgrind --quiet --leak-check=full --show-leak-kinds=all --errors-for-leak-kinds=all --error-exitcode=99 "$(CURDIR)/$(TARGET)" .quests .map .position) >"$$tmp/run.log" 2>"$$tmp/memory.log" || rc=$$?; \
+			else \
+				(cd "$$tmp" && "$(CURDIR)/$(TARGET)" .quests .map .position) >"$$tmp/run.log" 2>"$$tmp/error.log" || rc=$$?; \
+			fi; \
+			if [ "$$rc" -ne 0 ]; then \
+				echo "[FAIL] $$name: programa/Valgrind terminou com código $$rc."; \
+				if [ "$(TEST_MODE)" = "valgrind" ]; then cat "$$tmp/memory.log"; else cat "$$tmp/error.log"; fi; \
+				failed=$$((failed + 1)); \
+			elif [ ! -f "$$tmp/.results" ]; then \
+				echo "[FAIL] $$name: o programa não criou .results."; cat "$$tmp/run.log"; \
+				failed=$$((failed + 1)); \
+			elif diff -u "$$base.ProfSol" "$$tmp/.results" >"$$tmp/diff.log"; then \
+				echo "[PASS] $$name"; \
+			else \
+				echo "[FAIL] $$name: .results difere de .ProfSol:"; cat "$$tmp/diff.log"; \
+				failed=$$((failed + 1)); \
+			fi; \
+			if [ "$(TEST_MODE)" = "valgrind" ] && [ -s "$$tmp/memory.log" ]; then cat "$$tmp/memory.log"; fi; \
+			rm -rf "$$tmp"; \
+		fi; \
+		if [ "$(STOP_ON_FAIL)" = "1" ] && [ "$$failed" -ne 0 ]; then \
+			echo "Testes interrompidos no primeiro teste falhado ($$name)."; \
+			exit 1; \
+		fi; \
+	done; \
+	echo ""; echo "Testes executados: $$total; falhados: $$failed."; \
+	if [ "$$failed" -ne 0 ]; then exit 1; fi
 
 clean:
-	rm -f $(OBJECTS) $(TARGET)
+	rm -f $(foreach obj,$(OBJECTS),"$(obj)") "$(TARGET)" .results
