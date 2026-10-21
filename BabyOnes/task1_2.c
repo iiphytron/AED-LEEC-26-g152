@@ -5,10 +5,10 @@
 //Estrutura para armazenar a informação global dos clusters da rede.
  
 typedef struct {
-    int C;                 // Número total de cidades
-    int L;                 // Número total de ligações
+    int C;                 // Número de cidades
+    int L;                 // Número de ligações
     int num_clusters;      // Número total de clusters encontrados
-    int **clusters;        // Matriz com o ID das cidades em cada cluster
+    int **clusters;        // ID das cidades em cada cluster
     int *cluster_sizes;    // Tamanho de cada cluster
 } Rede;
 
@@ -138,7 +138,7 @@ void processar_tarefas_1_e_2(FILE *f_quests, FILE *f_results, Rede *rede) {
                 }
                 fprintf(f_results, "\n");
             }
-            fprintf(f_results, "\n"); // Linha em branco separadora no final
+            fprintf(f_results, "\n");
         }
     }
 }
