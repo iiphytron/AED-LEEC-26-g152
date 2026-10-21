@@ -1,100 +1,133 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
-/**
- * Retorna 1 se o ficheiro terminar exatamente com a extensão pretendida.
- */
+
+/* =========================================================================
+   1. ESTRUTURA E PROTÓTIPOS DAS TUAS FUNÇÕES REAIS
+   (Evita a necessidade de criar ficheiros .h de imediato)
+   ========================================================================= */
+
+// Estrutura do position.c
+typedef struct {
+    int id;
+    int x;
+    int y;
+} Posicao;
+
+// Função real do teu Map.c
+int Map(int ***ClusterOut, int **ClusterSizeOut, int *numeroClustersOut, int *COut);
+
+// Funções reais do teu position.c
+Posicao *ler_e_validar_posicoes(FILE *f_pos, int C);
+double **calcular_matriz_distancias(Posicao *cidades, int C);
+void libertar_matriz_distancias(double **D, int C);
+
+// Validação da extensão
 int tem_extensao(const char *nome, const char *ext) {
     if (!nome || !ext) return 0;
-
     int len_nome = strlen(nome);
     int len_ext = strlen(ext);
-
+    if (len_nome < len_ext) return 0;
     return strcmp(&nome[len_nome - len_ext], ext) == 0;
 }
 
+/* =========================================================================
+   2. MAIN INTEGRADOR COM DADOS REAIS
+   ========================================================================= */
+
 int main(int argc, char *argv[]) {
-    // 1. Validação de argumentos e extensões (deve ter exatamente 3 ficheiros nas extensões corretas)
+    // 1. Validação estrita de argumentos[cite: 4]
     if (argc != 4 ||
-        !tem_extensao(argv[1], 
-            3+".quests") ||
+        !tem_extensao(argv[1], ".quests") ||
         !tem_extensao(argv[2], ".map") ||
         !tem_extensao(argv[3], ".position")) {
-        return 0;
+        return 0; // Sai sem output se a invocação for inválida
     }
 
-    // 2. Abertura dos ficheiros
+    // 2. Abertura dos ficheiros[cite: 4]
     FILE *f_quests = fopen(argv[1], "r");
     FILE *f_map    = fopen(argv[2], "r");
     FILE *f_pos    = fopen(argv[3], "r");
 
-    // Se algum falhar, fecha os que conseguiram abrir e sai
     if (!f_quests || !f_map || !f_pos) {
         if (f_quests) fclose(f_quests);
         if (f_map)    fclose(f_map);
         if (f_pos)    fclose(f_pos);
         return 0;
     }
-/*MaP*/
 
-While (fgets!=\0)
-Fegtc()
-C=atoi
-While (fgets!=\0)
-	Fgetc(ler Segunda parte da string)
-L=atoi
+    /* ---------------------------------------------------------------------
+     * 3. CARREGAR DADOS REAIS DO MAPA (Map.c)
+     * --------------------------------------------------------------------- */
+    int C = 0;
+    int numeroClusters = 0;
+    int **Cluster = NULL;
+    int *ClusterSize = NULL;
 
+    // Chamas o teu Map() passando os endereços das variáveis.
+    // O teu Map.c vai preencher o C real, o numeroClusters, a matriz Cluster e os tamanhos!
+    if (Map(&Cluster, &ClusterSize, &numeroClusters, &C) != 0) {
+        fclose(f_quests); fclose(f_map); fclose(f_pos);
+        return 0;
+    }
 
-/*Position*/
+    /* ---------------------------------------------------------------------
+     * 4. CARREGAR E VALIDAR POSIÇÕES REAIS (position.c)
+     * --------------------------------------------------------------------- */
+    // Passa o f_pos e o 'C' REAL devolvido pelo Map.c
+    Posicao *cidades = ler_e_validar_posicoes(f_pos, C);
+    if (cidades == NULL) { 
+        // Se houver erro de validação no .position, fecha tudo e sai sem output
+        fclose(f_quests); fclose(f_map); fclose(f_pos);
+        return 0; 
+    }
 
-Structure Pos
-While (fgets!=\0)
-Fegtc(ler string)
-[i]=atoi
-While (fgets!=\0)
-	Fgetc(ler Segunda parte da string)
-Cityx[i]=atoi
-While (fgets!=\0)
-	Fgetc(ler terceira parte da string)
-Cityy[i]=atoi
-Cityx[i]=(int)malloc
-Cityy[i]=(int)malloc
-For (j=0, j<C, j++)
-	If (i!=j)
-Cityx[j]=(int)malloc
-Cityy[j]=(int)malloc
+    // Calcula a matriz D[C+1][C+1] com as coordenadas reais
+    double **D = calcular_matriz_distancias(cidades, C);
 
+    /* ---------------------------------------------------------------------
+     * 5. CRIAR FICHEIRO .results
+     * --------------------------------------------------------------------- */
+    char nome_results[256];
+    strcpy(nome_results, argv[1]);
+    int len = strlen(nome_results);
+    strcpy(&nome_results[len - 7], ".results"); // Troca ".quests" por ".results"
 
+    FILE *f_results = fopen(nome_results, "w");
+    if (f_results != NULL) {
+        
+        // Exemplo direto de escrita da Task 1 e Task 2 usando os dados REAIS:
+        
+        // Task 1
+        fprintf(f_results, "Task1 %d\n\n", numeroClusters);
 
-/*Structure D*/
-For (j=0, j<C, j++)
-	If (i!=j)
-		D[i]=sqrt(Cityx[j]*Cityx[i] + Cityy[j]*Cityy[i])
-	Else
+        // Task 2
+        fprintf(f_results, "Task2 %d\n", numeroClusters);
+        for (int i = 0; i < numeroClusters; i++) {
+            fprintf(f_results, "Cluster:");
+            for (int j = 0; j < ClusterSize[i]; j++) {
+                fprintf(f_results, " %d", Cluster[i][j]);
+            }
+            fprintf(f_results, "\n");
+        }
+        fprintf(f_results, "\n");
 
-Cluster/Tarefa 1
-//k -> clusters
+        fclose(f_results);
+    }
 
-K=0
-“int i, p, q, t, N = atoi (argv[1]); 
-int *id = (int *) malloc (N * sizeof (int)); 
-if (id == NULL) { 
-printf(“Unable to allocate id vector! Exiting…\n”); 
-exit(2); 
-} 
-for (i = 0; i < N ; i ++) id[i] = i ; 
-while (scanf("%d %d", &p, &q) == 2) { 
-if (id[p] == id[q]) continue;
-t = id[p]; 
-Cluster[k]=malloc
-CinC[k] ++
-for (i = 0; i < N; i ++) 
-if (id[i] == t) id[i] = id[q]; 
-printf (“Taks2/n);
-For (i=0, i<k, i++);
-printf (“Cluster” “%d”, i)
-ClusterQ=k+1;
-  
+    /* ---------------------------------------------------------------------
+     * 6. LIBERTAÇÃO DE MEMÓRIA E FECHO DE FICHEIROS
+     * --------------------------------------------------------------------- */
+    libertar_matriz_distancias(D, C);
+    free(cidades);
+    
+    // Libertar os clusters que o Map.c alocou
+    for (int i = 0; i < C; i++) {
+        free(Cluster[i]);
+    }
+    free(Cluster);
+    free(ClusterSize);
+
     fclose(f_quests);
     fclose(f_map);
     fclose(f_pos);
