@@ -30,7 +30,7 @@ Posicao *ler_e_validar_posicoes(FILE *f_pos, int C) {
     // Alocação dinâmica do vetor de posições (índices 1 a C)
     Posicao *cidades = (Posicao *) malloc((C + 1) * sizeof(Posicao));
     // Vetor de marcação para controlar duplicados e cidades em falta
-    int *registada = (int *) calloc((C + 1), sizeof(int));
+    int *registada = (int *) malloc((C + 1), sizeof(int));
 
     if (cidades == NULL || registada == NULL) {
         if (cidades) free(cidades);
