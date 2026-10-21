@@ -1,8 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
-
-// Estrutura representativa da posição/coordenada de uma cidade no plano 2D.
  
 typedef struct {
     int id; // ID da cidade (1 a C)
