@@ -2,9 +2,8 @@
 #include <stdlib.h>
 #include <math.h>
 
-/* 
- * Estrutura representativa da posição/coordenada de uma cidade no plano 2D.
- */
+// Estrutura representativa da posição/coordenada de uma cidade no plano 2D.
+ 
 typedef struct {
     int id; // ID da cidade (1 a C)
     int x;  // Coordenada X (1 a X_max)
@@ -12,7 +11,6 @@ typedef struct {
 } Posicao;
 
 /*
-  Parâmetros:
     f_pos: Ponteiro do ficheiro .position já aberto para leitura
     C: Número total de cidades lido previamente do ficheiro .map
     Ponteiro para o vetor de Posicao (índices 1 a C) em caso de sucesso.
