@@ -34,13 +34,13 @@ Rede *carregar_e_processar_mapa(FILE *f_map) {
     if (!rede) return NULL;
 
     // 1. Ler o número de cidades (C) e de ligações (L)
-    if (fscanf(f_map, "%d %d", &(rede->C), &(rede->L)) != 2) {
+    if (fscanf(f_map, "%d %d", &((*rede).C), &((*rede).L)) != 2) {
         free(rede);
         return NULL;
     }
 
-    int C = rede->C;
-    int L = rede->L;
+    int C = (*rede).C;
+    int L = (*rede).L;
 
     int *id = (int *) malloc((C + 1) * sizeof(int));
     int *usado = (int *) calloc((C + 1), sizeof(int));
@@ -61,13 +61,13 @@ Rede *carregar_e_processar_mapa(FILE *f_map) {
     }
 
     // 3. Alocar memória para os clusters
-    rede->clusters = (int **) malloc(C * sizeof(int *));
-    rede->cluster_sizes = (int *) calloc(C, sizeof(int));
+    (*rede).clusters = (int **) malloc(C * sizeof(int *));
+    (*rede).cluster_sizes = (int *) calloc(C, sizeof(int));
     for (int i = 0; i < C; i++) {
-        rede->clusters[i] = (int *) malloc(C * sizeof(int));
+        (*rede).clusters[i] = (int *) malloc(C * sizeof(int));
     }
 
-    rede->num_clusters = 0;
+    (*rede).num_clusters = 0;
 
     // Agrupar as cidades.
     while (1) {
@@ -88,13 +88,13 @@ Rede *carregar_e_processar_mapa(FILE *f_map) {
 
         for (int j = 1; j <= C; j++) {
             if (usado[j] == 0 && id[j] == valorCluster) {
-                rede->clusters[rede->num_clusters][idx_cidade++] = j;
+                (*rede).clusters[(*rede).num_clusters][idx_cidade++] = j;
                 usado[j] = 1;
             }
         }
 
-        rede->cluster_sizes[rede->num_clusters] = idx_cidade;
-        rede->num_clusters++;
+        (*rede).cluster_sizes[(*rede).num_clusters] = idx_cidade;
+        (*rede).num_clusters++;
     }
 
     free(id);
@@ -107,11 +107,11 @@ Rede *carregar_e_processar_mapa(FILE *f_map) {
  */
 void libertar_rede(Rede *rede) {
     if (!rede) return;
-    for (int i = 0; i < rede->C; i++) {
-        free(rede->clusters[i]);
+    for (int i = 0; i < (*rede).C; i++) {
+        free((*rede).clusters[i]);
     }
-    free(rede->clusters);
-    free(rede->cluster_sizes);
+    free((*rede).clusters);
+    free((*rede).cluster_sizes);
     free(rede);
 }
 
@@ -125,16 +125,16 @@ void processar_tarefas_1_e_2(FILE *f_quests, FILE *f_results, Rede *rede) {
         
         // Task1: Apenas o número de clusters
         if (strcmp(tarefa, "Task1") == 0) {
-            fprintf(f_results, "Task1 %d\n\n", rede->num_clusters);
+            fprintf(f_results, "Task1 %d\n\n", (*rede).num_clusters);
         }
         
         // Task2: Número de clusters seguido da composição detalhada de cada um[cite: 6, 8]
         else if (strcmp(tarefa, "Task2") == 0) {
-            fprintf(f_results, "Task2 %d\n", rede->num_clusters);
-            for (int i = 0; i < rede->num_clusters; i++) {
+            fprintf(f_results, "Task2 %d\n", (*rede).num_clusters);
+            for (int i = 0; i < (*rede).num_clusters; i++) {
                 fprintf(f_results, "Cluster:");
-                for (int j = 0; j < rede->cluster_sizes[i]; j++) {
-                    fprintf(f_results, " %d", rede->clusters[i][j]);
+                for (int j = 0; j < (*rede).cluster_sizes[i]; j++) {
+                    fprintf(f_results, " %d", (*rede).clusters[i][j]);
                 }
                 fprintf(f_results, "\n");
             }
